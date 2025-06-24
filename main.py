@@ -4,6 +4,26 @@ import sqlite3
 import hashlib
 
 
+def create_rounded_entry(parent, width=250, height=35, radius=15, bg_color="#ffffff"):
+    # Создаем фрейм-контейнер с явно заданным цветом фона
+    frame = tk.Frame(parent, bg='#f5f5f5')  # Используйте ваш цвет фона
+    
+    # Создаем canvas для рисования овала
+    canvas = tk.Canvas(frame, width=width, height=height, bg='#f5f5f5', highlightthickness=0)
+    canvas.pack()
+    
+    # Рисуем овальный фон
+    canvas.create_oval(0, 0, radius*2, height, fill=bg_color, outline='#cccccc')
+    canvas.create_oval(width-radius*2, 0, width, height, fill=bg_color, outline='#cccccc')
+    canvas.create_rectangle(radius, 0, width-radius, height, fill=bg_color, outline='#cccccc')
+    
+    # Создаем поле ввода
+    entry = tk.Entry(frame, bd=0, bg=bg_color, font=('Segoe UI', 11),
+                    highlightthickness=0, relief='flat')
+    entry.place(x=radius+5, y=height//2-10, width=width-radius*2-10, height=20)
+    
+    return frame, entry
+
 def init_db():
     '''Настройка базы данных'''
     conn = sqlite3.connect('sports_store.db')
@@ -100,7 +120,7 @@ def delete_account():
               foreground=[('active', 'white'), ('!disabled', 'white')])
 
     # Фрейм для центрирования содержимого
-    main_frame = ttk.Frame(delete_window, style='TFrame')
+    main_frame = tk.Frame(root, bg='#f5f5f5')
     main_frame.pack(expand=True, fill='both', padx=100, pady=100)
 
     ttk.Label(main_frame, text="Введите логин для удаления:",
@@ -174,7 +194,7 @@ def register():
     # Настройка стилей
     style = ttk.Style(register_window)
     style.theme_use('clam')
-    style.configure('TFrame', background='#f5f5f5')
+    #style.configure('TFrame', background='#f5f5f5')
     style.configure('TLabel', background='#f5f5f5', foreground='#333333', font=('Segoe UI', 12))
     style.configure('Large.TLabel', font=('Segoe UI', 14), background='#f5f5f5', foreground='#333333')
     style.configure('Large.TEntry', font=('Segoe UI', 12), padding=8)
@@ -285,13 +305,14 @@ header.pack(pady=(5, 15))
 
 
 # Поля для ввода
-ttk.Label(main_frame, text="Логин:", style='Large.TLabel').pack(pady=5)
-username_entry = ttk.Entry(main_frame, style='Large.TEntry')
-username_entry.pack(pady=5, ipady=8, fill='x')
+ttk.Label(main_frame, text="Логин:", style='Large.TLabel').pack(pady=3)
+username_canvas, username_entry = create_rounded_entry(main_frame)
+username_canvas.pack(pady=3)
 
-ttk.Label(main_frame, text="Пароль:", style='Large.TLabel').pack(pady=5)
-password_entry = ttk.Entry(main_frame, show="*", style='Large.TEntry')
-password_entry.pack(pady=5, ipady=8, fill='x')
+ttk.Label(main_frame, text="Пароль:", style='Large.TLabel').pack(pady=3)
+password_canvas, password_entry = create_rounded_entry(main_frame)
+password_entry.config(show="*")
+password_canvas.pack(pady=3)
 
 # Кнопки
 buttons_frame = ttk.Frame(main_frame, style='TFrame')
