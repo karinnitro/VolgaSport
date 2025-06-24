@@ -5,7 +5,7 @@ import hashlib
 
 import tkinter as tk
 
-def create_rounded_entry(parent, width=250, height=35, radius=15, bg_color="#ffffff", border_color="#72a8fe"):
+def create_rounded_entry(parent, width=250, height=35, radius=15, bg_color="#ffffff", border_color="#72a8fe", is_password=False):
     # Создаем фрейм-контейнер
     frame = tk.Frame(parent, bg='#f5f5f5')
     
@@ -85,12 +85,33 @@ def create_rounded_entry(parent, width=250, height=35, radius=15, bg_color="#fff
         bg=bg_color,
         font=('Segoe UI', 14),
         highlightthickness=0,
-        relief='flat'
+        relief='flat',
+        show='*' if is_password else ''  # По умолчанию звездочки для пароля
     )
     entry.place(x=radius+5, y=height//2-10, width=width-radius*2-10, height=20)
     
+    # Добавляем кнопку показа пароля только для полей пароля
+    if is_password:
+        def toggle_password():
+            if entry.cget('show') == '*':
+                entry.config(show='')
+                eye_btn.config(text='🔒')  # Пароль виден - показываем "скрыть"
+            else:
+                entry.config(show='*')
+                eye_btn.config(text='🔓')  # Пароль скрыт - показываем "показать"
+        
+        eye_btn = tk.Button(
+            frame,
+            text='🔓',  # Начальное состояние - "показать" (пароль скрыт)
+            font=('Segoe UI', 10),
+            command=toggle_password,
+            bg=bg_color,
+            bd=0,
+            relief='flat',
+            activebackground=bg_color
+        )
+        eye_btn.place(x=width-30, y=height//2-10, width=25, height=20)
     return frame, entry
-
 
 def init_db():
     '''Настройка базы данных'''
@@ -180,12 +201,12 @@ def delete_account():
               fieldbackground=[('active', '#ffffff'),
                                ('!disabled', '#ffffff')],
               foreground=[('active', '#333333'), ('!disabled', '#333333')])
-    style.configure('Large.TButton', font=('Segoe UI', 12, 'bold'), padding=10,
-                    background='#6200ee', foreground='white', borderwidth=0,
-                    focusthickness=3, focuscolor='#6200ee')
+    style.configure('Large.TButton', font=('Segoe UI', 14, 'bold'), padding=6,
+                background="#72a8fe", foreground='white', borderwidth=0,
+                focusthickness=3, focuscolor='#72a8fe')
     style.map('Large.TButton',
-              background=[('active', '#3700b3'), ('!disabled', '#6200ee')],
-              foreground=[('active', 'white'), ('!disabled', 'white')])
+                background=[('active', '#72a8fe'), ('!disabled', '#72a8fe')],
+                foreground=[('active', 'white'), ('!disabled', 'white')])
 
     # Фрейм для центрирования содержимого
     main_frame = tk.Frame(root, bg='#f5f5f5')
@@ -351,7 +372,7 @@ style.map('Large.TEntry',
           fieldbackground=[('active', '#ffffff'), ('!disabled', '#ffffff')],
           foreground=[('active', '#333333'), ('!disabled', '#333333')])
 
-style.configure('Large.TButton', font=('Segoe UI', 14, 'bold'), padding=12,
+style.configure('Large.TButton', font=('Segoe UI', 14, 'bold'), padding=6,
                 background="#72a8fe", foreground='white', borderwidth=0,
                 focusthickness=3, focuscolor='#72a8fe')
 style.map('Large.TButton',
@@ -378,8 +399,7 @@ username_canvas, username_entry = create_rounded_entry(main_frame)
 username_canvas.pack(pady=3)
 
 ttk.Label(main_frame, text="Пароль:", style='Large.TLabel').pack(pady=3)
-password_canvas, password_entry = create_rounded_entry(main_frame)
-password_entry.config(show="*")
+password_canvas, password_entry = create_rounded_entry(main_frame, is_password=True)
 password_canvas.pack(pady=3)
 
 # Кнопки
