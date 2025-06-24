@@ -4,7 +4,7 @@ import sqlite3
 from buy_product import ProductPurchaseWindow
 from review_window import ProductReviewWindow
 from view_reviews import ViewProductReviewsWindow
-from datetime import datetime
+
 
 class CustomerStatisticsWindow:
     def __init__(self, parent, username):
@@ -15,7 +15,7 @@ class CustomerStatisticsWindow:
         self.window = tk.Toplevel(parent)
         self.window.title(f"Статистика покупателя - {username}")
         self.window.geometry("600x400")
-        self.window.configure(bg="#e0e6f5")
+        self.window.configure(bg="#c6e3ff")
         self.center_window(600, 400)
         self.window.resizable(False, False)
 
@@ -23,7 +23,7 @@ class CustomerStatisticsWindow:
         style = ttk.Style(self.window)
         style.theme_use('clam')
         style.configure('TFrame', background="#e0e6f5")
-        style.configure('TLabel', background="#e0e6f5", foreground='#333333', font=('Segoe UI', 12))
+        style.configure('TLabel', background="#e0e6f5", foreground="#000000", font=('Helvetica', 12))
         style.configure('Large.TLabel', font=('Segoe UI', 16, 'bold'), background='#e0e6f5', foreground='#1a3e72')
 
         # Основной фрейм
@@ -31,7 +31,7 @@ class CustomerStatisticsWindow:
         main_frame.pack(expand=True, fill='both', padx=20, pady=20)
 
         # Заголовок
-        ttk.Label(main_frame, text="Статистика покупателя", style='Large.TLabel').pack(pady=10)
+        ttk.Label(main_frame, text=f"{username}", style='Large.TLabel').pack(pady=10)
 
         # Получение статистики
         self.load_statistics(main_frame)
