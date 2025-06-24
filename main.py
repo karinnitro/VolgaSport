@@ -3,26 +3,94 @@ from tkinter import ttk, messagebox, font
 import sqlite3
 import hashlib
 
+import tkinter as tk
 
-def create_rounded_entry(parent, width=250, height=35, radius=15, bg_color="#ffffff"):
-    # Создаем фрейм-контейнер с явно заданным цветом фона
-    frame = tk.Frame(parent, bg='#f5f5f5')  # Используйте ваш цвет фона
+def create_rounded_entry(parent, width=250, height=35, radius=15, bg_color="#ffffff", border_color="#72a8fe"):
+    # Создаем фрейм-контейнер
+    frame = tk.Frame(parent, bg='#f5f5f5')
     
-    # Создаем canvas для рисования овала
-    canvas = tk.Canvas(frame, width=width, height=height, bg='#f5f5f5', highlightthickness=0)
+    # Canvas для рисования
+    canvas = tk.Canvas(
+        frame,
+        width=width,
+        height=height,
+        bg='#f5f5f5',
+        highlightthickness=0
+    )
     canvas.pack()
-    
-    # Рисуем овальный фон
-    canvas.create_oval(0, 0, radius*2, height, fill=bg_color, outline='#cccccc')
-    canvas.create_oval(width-radius*2, 0, width, height, fill=bg_color, outline='#cccccc')
-    canvas.create_rectangle(radius, 0, width-radius, height, fill=bg_color, outline='#cccccc')
-    
-    # Создаем поле ввода
-    entry = tk.Entry(frame, bd=0, bg=bg_color, font=('Segoe UI', 11),
-                    highlightthickness=0, relief='flat')
+
+    # 1. Рисуем полную белую заливку (овал + прямоугольник)
+    # Левый полукруг с заливкой
+    canvas.create_oval(
+        0, 0,
+        radius*2, height,
+        outline='',  # Без контура
+        fill=bg_color
+    )
+    # Правый полукруг с заливкой
+    canvas.create_oval(
+        width-radius*2, 0,
+        width, height,
+        outline='',
+        fill=bg_color
+    )
+    # Центральный прямоугольник
+    canvas.create_rectangle(
+        radius, 0,
+        width-radius, height,
+        outline='',
+        fill=bg_color
+    )
+
+    # 2. Рисуем границы поверх заливки
+    # Левый полукруг (только контур)
+    canvas.create_arc(
+        0, 0,
+        radius*2, height,
+        start=90, extent=180,
+        outline=border_color,
+        fill='',
+        width=1.5,
+        style="arc"
+    )
+    # Правый полукруг (только контур)
+    canvas.create_arc(
+        width-radius*2, 0,
+        width, height,
+        start=270, extent=180,
+        outline=border_color,
+        fill='',
+        width=1.5,
+        style="arc"
+    )
+    # Верхняя граница
+    canvas.create_line(
+        radius, 0,
+        width-radius, 0,
+        fill=border_color,
+        width=1
+    )
+    # Нижняя граница
+    canvas.create_line(
+        radius, height,
+        width-radius, height,
+        fill=border_color,
+        width=2
+    )
+
+    # Поле ввода
+    entry = tk.Entry(
+        frame,
+        bd=0,
+        bg=bg_color,
+        font=('Segoe UI', 14),
+        highlightthickness=0,
+        relief='flat'
+    )
     entry.place(x=radius+5, y=height//2-10, width=width-radius*2-10, height=20)
     
     return frame, entry
+
 
 def init_db():
     '''Настройка базы данных'''
@@ -283,11 +351,11 @@ style.map('Large.TEntry',
           fieldbackground=[('active', '#ffffff'), ('!disabled', '#ffffff')],
           foreground=[('active', '#333333'), ('!disabled', '#333333')])
 
-style.configure('Large.TButton', font=('Segoe UI', 12, 'bold'), padding=10,
-                background='#6200ee', foreground='white', borderwidth=0,
-                focusthickness=3, focuscolor='#6200ee')
+style.configure('Large.TButton', font=('Segoe UI', 14, 'bold'), padding=12,
+                background="#72a8fe", foreground='white', borderwidth=0,
+                focusthickness=3, focuscolor='#72a8fe')
 style.map('Large.TButton',
-          background=[('active', '#3700b3'), ('!disabled', '#6200ee')],
+          background=[('active', '#72a8fe'), ('!disabled', '#72a8fe')],
           foreground=[('active', 'white'), ('!disabled', 'white')])
 
 # Основной фрейм для центрирования содержимого
