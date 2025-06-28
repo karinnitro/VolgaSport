@@ -329,7 +329,7 @@ def show_store_window(username):
         cursor.execute("SELECT name, category, price, quantity, description FROM products WHERE name=?", (name,))
         product_data = cursor.fetchone()
         if product_data:
-            ProductPurchaseWindow(store_window, product_data)
+            ProductPurchaseWindow(store_window, product_data, callback=load_products)
 
     # Панель кнопок
     button_frame = ttk.Frame(main_frame, style='TFrame')

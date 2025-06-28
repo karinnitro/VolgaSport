@@ -6,9 +6,10 @@ from styles import configure_styles
 
 
 class ProductPurchaseWindow:
-    def __init__(self, parent, product_info):
+    def __init__(self, parent, product_info, callback=None):
         self.parent = parent
         self.product_info = product_info
+        self.callback = callback
         
         self.purchase_window = tk.Toplevel(parent)
         self.purchase_window.title("Покупка товара")
@@ -248,23 +249,48 @@ class ProductPurchaseWindow:
             messagebox.showerror("Ошибка", "Количество должно быть от 1 до 100")
             return
         
-        # Расчет общей суммы
+            # Расчет общей суммы
         price = float(self.product_info[2])
         total_amount = price * quantity
+        
+        # Проверка наличия достаточного количества товара
+        try:
+            self.cursor.execute("SELECT quantity FROM products WHERE name=?", (self.product_info[0],))
+            current_quantity = self.cursor.fetchone()[0]
+            
+            if quantity > current_quantity:
+                messagebox.showerror("Ошибка", f"Недостаточно товара в наличии. Доступно: {current_quantity}")
+                return
+                
+        except sqlite3.Error as e:
+            messagebox.showerror("Ошибка базы данных", f"Не удалось проверить количество товара: {e}")
+            return
         
         # Дата покупки
         purchase_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # Сохранение покупки в базу данных
         try:
+            # Начинаем транзакцию
+            self.conn.execute("BEGIN TRANSACTION")
+            
+            # 1. Добавляем запись о покупке
             self.cursor.execute('''INSERT INTO purchases 
                                 (product_name, product_category, product_price,
-                                 customer_name, customer_email, customer_phone,
-                                 quantity, delivery_method, purchase_date, total_amount)
+                                customer_name, customer_email, customer_phone,
+                                quantity, delivery_method, purchase_date, total_amount)
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                                 (self.product_info[0], self.product_info[1], price,
-                                 customer_name, customer_email, customer_phone,
-                                 quantity, delivery_method, purchase_date, total_amount))
+                                customer_name, customer_email, customer_phone,
+                                quantity, delivery_method, purchase_date, total_amount))
+            
+            # 2. Обновляем количество товара
+            self.cursor.execute('''UPDATE products 
+                                SET quantity = quantity - ?
+                                WHERE name = ?''',
+                                (quantity, self.product_info[0]))
+            
+            # Фиксируем транзакцию
             self.conn.commit()
             
             # Показать подтверждение
@@ -280,11 +306,16 @@ class ProductPurchaseWindow:
                 f"Спасибо за покупку в нашем спортивном магазине!"
             )
             messagebox.showinfo("Покупка подтверждена", confirmation)
-            
+
+            # После успешной покупки
+            if self.callback:
+                self.callback()  # Вызываем callback для обновления списка товаров
+        
             # Закрыть окно покупки
             self.purchase_window.destroy()
             
         except sqlite3.Error as e:
+            self.conn.rollback()
             messagebox.showerror("Ошибка базы данных", f"Не удалось сохранить данные о покупке: {e}")
     
     def __del__(self):
