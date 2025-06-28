@@ -182,12 +182,16 @@ def show_purchased_products():
     tree.heading('purchase_date', text='Дата покупки')
     tree.heading('delivery_method', text='Доставка')
 
-    tree.column('product_name', width=250, anchor='w')
-    tree.column('product_category', width=150, anchor='w')
-    tree.column('quantity', width=80, anchor='center')
-    tree.column('total_amount', width=100, anchor='e')
-    tree.column('purchase_date', width=120, anchor='center')
-    tree.column('delivery_method', width=150, anchor='w')
+    # Измените эти строки:
+    tree.column('product_name', width=250, anchor='center')    # Было 'w'
+    tree.column('product_category', width=150, anchor='center') # Было 'w'
+    tree.column('quantity', width=80, anchor='center')         # Уже было 'center'
+    tree.column('total_amount', width=100, anchor='center')    # Было 'e'
+    tree.column('purchase_date', width=120, anchor='center')   # Уже было 'center'
+    tree.column('delivery_method', width=150, anchor='center') # Было 'w'
+
+    # Добавьте для выравнивания заголовков:
+    style.configure('Treeview.Heading', anchor='center')
 
     tree.pack(fill='both', expand=True)
 
@@ -268,10 +272,19 @@ def show_store_window(username):
     tree.heading('quantity', text='Наличие')
     tree.heading('rating', text='Рейтинг')
     tree.heading('status', text='Статус')
-    
-    tree.pack(expand=True, fill='both')
 
-    # Далее ваш код продолжается...
+    # Добавьте эти строки для настройки выравнивания столбцов:
+    tree.column('name', anchor='center', width=250)      # Выравнивание по центру
+    tree.column('category', anchor='center', width=150)  # Выравнивание по центру
+    tree.column('price', anchor='center', width=100)     # Выравнивание по центру
+    tree.column('quantity', anchor='center', width=80)   # Выравнивание по центру
+    tree.column('rating', anchor='center', width=100)    # Выравнивание по центру
+    tree.column('status', anchor='center', width=120)    # Выравнивание по центру
+
+    # Добавьте эту строку для выравнивания заголовков по центру:
+    style.configure('Treeview.Heading', anchor='center')
+
+    tree.pack(expand=True, fill='both')
 
     # Загрузка товаров
     def load_products():
