@@ -2,32 +2,22 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import sqlite3
 from datetime import datetime
+from styles import configure_styles
+
 
 class ProductPurchaseWindow:
     def __init__(self, parent, product_info):
         self.parent = parent
         self.product_info = product_info
         
-        # Создание окна покупки
         self.purchase_window = tk.Toplevel(parent)
         self.purchase_window.title("Покупка товара")
         self.purchase_window.geometry("600x500")
         self.purchase_window.resizable(False, False)
+        self.purchase_window.configure(bg='#D9EBFF')
         
-        # Центрирование окна
-        self.center_window(600, 500)
-        
-        # Цветовая схема
-        self.bg_color = "#ffffff"
-        self.text_color = "#333333"
-        self.button_color = "#0078d7"
-        self.button_hover = "#0056a1"
-        self.price_color = "#e74c3c"
-        
-        # Настройка стилей
-        self.style = ttk.Style()
-        self.style.theme_use('clam')
-        self.configure_styles()
+        # Применяем стили
+        self.style = configure_styles(self.purchase_window)
         
         # Основной фрейм
         self.main_frame = ttk.Frame(self.purchase_window, style='TFrame')

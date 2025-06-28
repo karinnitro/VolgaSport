@@ -4,6 +4,7 @@ import sqlite3
 from buy_product import ProductPurchaseWindow
 from review_window import ProductReviewWindow
 from view_reviews import ViewProductReviewsWindow
+from styles import configure_styles
 
 
 class CustomerStatisticsWindow:
@@ -98,7 +99,9 @@ def init_store_db():
                     category TEXT NOT NULL,
                     price REAL NOT NULL,
                     quantity INTEGER NOT NULL,
-                    description TEXT)''')
+                    description TEXT)
+                   
+            ''')
 
     # Таблица отзывов
     cursor.execute('''CREATE TABLE IF NOT EXISTS reviews
@@ -128,11 +131,13 @@ def init_store_db():
     if cursor.execute("SELECT COUNT(*) FROM products").fetchone()[0] == 0:
         test_products = [
             ('Беговая дорожка ProForm', 'Кардио оборудование', 45990.00, 10, 
-             'Профессиональная беговая дорожка с мощным двигателем 2.5 л.с.'),
+             'Профессиональная беговая дорожка с мощным двигателем 2.5 л.с.', 'images/velosiped.jpg'),
             ('Гантели наборные 20 кг', 'Силовое оборудование', 3490.00, 25,
              'Наборные гантели с неопреновым покрытием, максимальный вес 20 кг'),
             ('Футбольный мяч Adidas', 'Спортивные товары', 2490.00, 30,
-             'Официальный мяч для матчей, размер 5')
+             'Официальный мяч для матчей, размер 5'),
+            ('Штаны спортивные Kappa', 'Спортивная одежда', 1490.00, 10,
+             'Штаны мужские оригинал Kappa')
         ]
         cursor.executemany("INSERT INTO products VALUES (NULL,?,?,?,?,?)", test_products)
         conn.commit()
@@ -205,58 +210,68 @@ def show_store_window(username):
 
     # Создание окна
     store_window = tk.Tk()
-    store_window.title(f"Спортивный магазин - {username}")
+    store_window.title(f"VolgaShop - Добро пожаловать, {username}")
     store_window.geometry("1600x900")
-    store_window.configure(bg="#f0f5ff")  # Светло-голубой фон окна
+    store_window.configure(bg="#D9EBFF")  # Изменен цвет фона
+    store_window.resizable(False, False)  
 
     # Подключение БД
     conn = sqlite3.connect('sports_store.db')
     cursor = conn.cursor()
 
-    # Стили
+    # Стили - полная переработка под единый стиль
     style = ttk.Style()
-    style.theme_use('default')
-
-    # Стили для таблицы
+    style.theme_use('clam')  # Изменена тема
+    
+    # Основные настройки стиля
+    style.configure('.', font=('Segoe UI', 12))
+    style.configure('TFrame', background='#f5f5f5')
+    
+    # Стили для таблицы (как в первом варианте)
     style.configure('Treeview',
                     background="#ffffff",
                     foreground="#333333",
-                    rowheight=30,
+                    rowheight=35,
                     fieldbackground='#ffffff',
-                    font=('Arial', 12))
+                    font=('Segoe UI', 12))  # Изменен шрифт
     style.configure('Treeview.Heading',
-                    background="#3B98F4",
+                    background="#72a8fe",  # Изменен цвет
                     foreground='white',
-                    font=('Arial', 14, 'bold'))
+                    font=('Segoe UI', 12, 'bold'))  # Изменен шрифт
     style.map('Treeview',
-              background=[('selected', "#6ba9e8")],
+              background=[('selected', "#478dff")],  # Изменен цвет выделения
               foreground=[('selected', 'white')])
 
-    # Стили для кнопок
+    # Стили для кнопок (как в первом варианте)
     style.configure('TButton',
-                    font=('Arial', 12),
-                    padding=10,
+                    font=('Segoe UI', 12),
+                    padding=8,
                     relief='flat',
-                    background="#3B98F4",
+                    background="#72a8fe",  # Изменен цвет
                     foreground='white')
     style.map('TButton',
-              background=[('active', '#0059b3')],
+              background=[('active', '#478dff')],  # Изменен цвет активности
               foreground=[('active', 'white')])
 
     # Основной интерфейс
     main_frame = ttk.Frame(store_window, style='TFrame')
     main_frame.pack(expand=True, fill='both', padx=20, pady=20)
 
-    # Таблица товаров
+    # Таблица товаров (оставляем как есть)
     columns = ('name', 'category', 'price', 'quantity', 'rating', 'status')
     tree = ttk.Treeview(main_frame, columns=columns, show='headings')
+    
+    # Настройка заголовков (можно оставить как есть)
     tree.heading('name', text='Название')
-    tree.heading('category', text='Категория')
+    tree.heading('category', text='Категория') 
     tree.heading('price', text='Цена')
     tree.heading('quantity', text='Наличие')
     tree.heading('rating', text='Рейтинг')
     tree.heading('status', text='Статус')
+    
     tree.pack(expand=True, fill='both')
+
+    # Далее ваш код продолжается...
 
     # Загрузка товаров
     def load_products():

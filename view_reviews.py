@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk,  messagebox
+from tkinter import ttk, messagebox
 import sqlite3
 
 class ViewProductReviewsWindow:
@@ -8,32 +8,33 @@ class ViewProductReviewsWindow:
         self.product_id = product_id
         
         self.window = tk.Toplevel(parent)
-        self.window.title(f"Отзывы на товар: {product_name}")
+        self.window.title(f"VolgaShop - Отзывы: {product_name}")
         self.window.geometry("900x650")
-        self.window.configure(bg='#f0f5ff')
+        self.window.configure(bg='#D9EBFF')  # Изменен фон
         
         # Стили
         self.style = ttk.Style()
-        self.style.configure('TFrame', background='#f0f5ff')
+        self.style.theme_use('clam')  # Единая тема
+        self.style.configure('TFrame', background='#f5f5f5')  # Изменен фон
         self.style.configure('Header.TLabel', 
-                           font=('Arial', 16, 'bold'), 
-                           background='#f0f5ff',
-                           foreground='#1a3e72')
+                           font=('Poppins', 16, 'bold'),  # Изменен шрифт
+                           background='#f5f5f5',
+                           foreground='#478dff')  # Изменен цвет
         self.style.configure('Treeview', 
-                           font=('Arial', 11),
-                           rowheight=25,
+                           font=('Segoe UI', 12),  # Изменен шрифт
+                           rowheight=30,
                            fieldbackground='white')
         self.style.configure('Treeview.Heading', 
-                           font=('Arial', 12, 'bold'),
-                           background='#3B98F4',
+                           font=('Segoe UI', 12, 'bold'),  # Изменен шрифт
+                           background='#72a8fe',  # Изменен цвет
                            foreground='white')
         self.style.map('Treeview',
-                      background=[('selected', '#6ba9e8')],
+                      background=[('selected', '#478dff')],  # Изменен цвет
                       foreground=[('selected', 'white')])
         
         # Основной фрейм
         main_frame = ttk.Frame(self.window, style='TFrame')
-        main_frame.pack(expand=True, fill='both', padx=10, pady=10)
+        main_frame.pack(expand=True, fill='both', padx=20, pady=20)
         
         # Заголовок
         ttk.Label(main_frame, 
@@ -44,8 +45,7 @@ class ViewProductReviewsWindow:
         self.tree = ttk.Treeview(main_frame, 
                                 columns=('user', 'rating', 'comment', 'date'), 
                                 show='headings',
-                                height=20,
-                                style='Treeview')
+                                height=20)
         
         # Настройка колонок
         self.tree.heading('user', text='Покупатель')

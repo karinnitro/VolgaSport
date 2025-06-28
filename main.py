@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, font
 import sqlite3
 import hashlib
-
+from styles import configure_styles
 import tkinter as tk
 
 def create_rounded_entry(parent, width=250, height=35, radius=15, bg_color="#ffffff", border_color="#72a8fe", is_password=False):
@@ -141,23 +141,20 @@ def hash_password(password):
 
 
 def delete_account():
-    '''Удаление аккаунта'''
     def confirm_delete():
-        username = delete_username_entry.get()
-        password = delete_password_entry.get()
+        username = username_entry.get()
+        password = password_entry.get()
         if not username or not password:
             messagebox.showerror("Ошибка", "Введите логин и пароль!")
             return
         conn = sqlite3.connect('sports_store.db')
         cursor = conn.cursor()
-        cursor.execute(
-            'SELECT password FROM users WHERE username = ?', (username,))
+        cursor.execute('SELECT password FROM users WHERE username = ?', (username,))
         result = cursor.fetchone()
 
         if result and hash_password(password) == result[0]:
             try:
-                cursor.execute(
-                    'DELETE FROM users WHERE username = ?', (username,))
+                cursor.execute('DELETE FROM users WHERE username = ?', (username,))
                 conn.commit()
                 messagebox.showinfo("Успех", "Аккаунт успешно удален!")
                 delete_window.destroy()
@@ -169,71 +166,55 @@ def delete_account():
             messagebox.showerror("Ошибка", "Неверный логин или пароль!")
             conn.close()
 
-    # Окно удаления аккаунта
+    # Создаём окно с новыми размерами
     delete_window = tk.Toplevel(root)
     delete_window.title("Удаление аккаунта")
-    delete_window.geometry("800x600")
-    delete_window.minsize(800, 600)
+    delete_window.geometry("500x400")  # Новый размер
+    delete_window.minsize(400, 300)    # Минимальный размер меньше, чем geometry
+    delete_window.resizable(False, False)  # Фиксируем размер
     delete_window.configure(bg='#f5f5f5')
-    # Центрирование окна
-    window_width = 800
-    window_height = 600
+
+    # Центрирование (обновлённые координаты)
+    window_width = 500
+    window_height = 400
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     center_x = int(screen_width/2 - window_width/2)
     center_y = int(screen_height/2 - window_height/2)
-    delete_window.geometry(
-        f'{window_width}x{window_height}+{center_x}+{center_y}')
+    delete_window.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
-    # Стиль для крупных элементов
-    style = ttk.Style(delete_window)
-    style.theme_use('clam')
+    # Главный фрейм с уменьшенными отступами
+    main_frame = tk.Frame(delete_window, bg='#f5f5f5')
+    main_frame.pack(expand=True, fill='both', padx=40, pady=40)  # Уменьшено с padx=100
 
-    # Настройка стилей
-    style.configure('TFrame', background='#f5f5f5')
-    style.configure('TLabel', background='#f5f5f5',
-                    foreground='#333333', font=('Segoe UI', 12))
-    style.configure('Large.TLabel', font=('Segoe UI', 14),
-                    background='#f5f5f5', foreground='#333333')
-    style.configure('Large.TEntry', font=('Segoe UI', 12), padding=8, bordercolor='#cccccc',
-                    lightcolor='#cccccc', darkcolor='#cccccc', relief='flat')
-    style.map('Large.TEntry',
-              fieldbackground=[('active', '#ffffff'),
-                               ('!disabled', '#ffffff')],
-              foreground=[('active', '#333333'), ('!disabled', '#333333')])
-    style.configure('Large.TButton', font=('Segoe UI', 14, 'bold'), padding=6,
-                background="#72a8fe", foreground='white', borderwidth=0,
-                focusthickness=3, focuscolor='#72a8fe')
-    style.map('Large.TButton',
-                background=[('active', '#72a8fe'), ('!disabled', '#72a8fe')],
-                foreground=[('active', 'white'), ('!disabled', 'white')])
+    # Заголовок
+    header = ttk.Label(
+        main_frame,
+        text="Удаление аккаунта",
+        style='Large.TLabel',
+        font=('Poppins', 18, 'bold'),
+        foreground="#478dff"
+    )
+    header.pack(pady=(5, 20))  # Уменьшен отступ
 
-    # Фрейм для центрирования содержимого
-    main_frame = tk.Frame(root, bg='#f5f5f5')
-    main_frame.pack(expand=True, fill='both', padx=100, pady=100)
+    # Поля ввода
+    ttk.Label(main_frame, text="Логин:", style='Large.TLabel').pack(pady=3)
+    username_canvas, username_entry = create_rounded_entry(main_frame)
+    username_canvas.pack(pady=3)
 
-    ttk.Label(main_frame, text="Введите логин для удаления:",
-              style='Large.TLabel').pack(pady=10)
-    delete_username_entry = ttk.Entry(main_frame, style='Large.TEntry')
-    delete_username_entry.pack(pady=10, ipady=8, fill='x')
+    ttk.Label(main_frame, text="Пароль:", style='Large.TLabel').pack(pady=3)
+    password_canvas, password_entry = create_rounded_entry(main_frame, is_password=True)
+    password_canvas.pack(pady=3)
 
-    ttk.Label(main_frame, text="Введите пароль для подтверждения:",
-              style='Large.TLabel').pack(pady=10)
-    delete_password_entry = ttk.Entry(
-        main_frame, show="*", style='Large.TEntry')
-    delete_password_entry.pack(pady=10, ipady=8, fill='x')
-
-    # Кнопки подтверждения/отмены
+    # Кнопки
     buttons_frame = ttk.Frame(main_frame, style='TFrame')
     buttons_frame.pack(pady=20)
 
-    ttk.Button(buttons_frame, text="Удалить аккаунт",
-               command=confirm_delete, style='Large.TButton').pack(side='left', padx=10, ipady=8, ipadx=20)
-    ttk.Button(buttons_frame, text="Отмена",
-               command=delete_window.destroy, style='Large.TButton').pack(side='left', padx=10, ipady=8, ipadx=20)
-
+    ttk.Button(buttons_frame, text="Удалить", command=confirm_delete, style='Large.TButton').pack(side='left', padx=10)
+    ttk.Button(buttons_frame, text="Отмена", command=delete_window.destroy, style='Large.TButton').pack(side='left', padx=10)
 def register():
     '''Регистрация пользователя'''
+    original_button_style = ttk.Style().lookup('Large.TButton', 'font')
     def register_user():
         username = new_username_entry.get()
         password = new_password_entry.get()
@@ -267,12 +248,14 @@ def register():
     # Создаем окно регистрации
     register_window = tk.Toplevel(root)
     register_window.title("Регистрация в VolgaShop")
-    register_window.geometry("800x600")
-    register_window.minsize(800, 600)
+    register_window.geometry("500x600")
+    register_window.minsize(500, 600)
     register_window.configure(bg='#f5f5f5')
 
+    style = configure_styles(root)
+    
     # Центрирование окна
-    window_width = 800
+    window_width = 500
     window_height = 600
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
@@ -280,41 +263,55 @@ def register():
     center_y = int(screen_height/2 - window_height/2)
     register_window.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
-    # Настройка стилей
+    # Настройка стилей с увеличенным шрифтом для кнопки
     style = ttk.Style(register_window)
     style.theme_use('clam')
-    #style.configure('TFrame', background='#f5f5f5')
+    style.configure('TFrame', background='#f5f5f5')
     style.configure('TLabel', background='#f5f5f5', foreground='#333333', font=('Segoe UI', 12))
     style.configure('Large.TLabel', font=('Segoe UI', 14), background='#f5f5f5', foreground='#333333')
-    style.configure('Large.TEntry', font=('Segoe UI', 12), padding=8)
-    style.configure('Large.TButton', font=('Segoe UI', 12, 'bold'), padding=10,
-                  background='#6200ee', foreground='white')
+    
+    # Новый стиль для кнопки регистрации - меньшая кнопка с большим шрифтом
+    style.configure('Register.TButton', 
+                   font=('Segoe UI', 16, 'bold'),  # Увеличенный шрифт
+                   padding=6,                     # Меньший отступ (было 10)
+                   background="#72a8fe", 
+                   foreground='white')
 
     # Главный фрейм
     main_frame = ttk.Frame(register_window, style='TFrame')
-    main_frame.pack(expand=True, fill='both', padx=100, pady=50)  # Уменьшил pady сверху
+    main_frame.pack(expand=True, fill='both', padx=100, pady=50)
 
-    # Поля ввода
+    # Добавляем заголовок "Регистрация" (новый код)
+    registration_label = ttk.Label(
+        main_frame,
+        text="Регистрация",
+        style='Large.TLabel',
+        font=('Poppins', 18, 'bold'),
+        foreground="#478dff"
+    )
+    registration_label.pack(pady=(0, 20))  # Отступ снизу 20 пикселей
+
+    # Поля ввода с закругленными краями
     ttk.Label(main_frame, text="Логин:", style='Large.TLabel').pack(pady=5)
-    new_username_entry = ttk.Entry(main_frame, style='Large.TEntry')
-    new_username_entry.pack(pady=5, ipady=8, fill='x')
+    username_canvas, new_username_entry = create_rounded_entry(main_frame)
+    username_canvas.pack(pady=5)
 
     ttk.Label(main_frame, text="Пароль:", style='Large.TLabel').pack(pady=5)
-    new_password_entry = ttk.Entry(main_frame, show="*", style='Large.TEntry')
-    new_password_entry.pack(pady=5, ipady=8, fill='x')
+    password_canvas, new_password_entry = create_rounded_entry(main_frame, is_password=True)
+    password_canvas.pack(pady=5)
 
     ttk.Label(main_frame, text="Повторите пароль:", style='Large.TLabel').pack(pady=5)
-    confirm_password_entry = ttk.Entry(main_frame, show="*", style='Large.TEntry')
-    confirm_password_entry.pack(pady=5, ipady=8, fill='x')
+    confirm_canvas, confirm_password_entry = create_rounded_entry(main_frame, is_password=True)
+    confirm_canvas.pack(pady=5)
 
-    # Кнопка регистрации (теперь точно будет видна)
+    # Кнопка регистрации
     register_btn = ttk.Button(
         main_frame,
         text="Зарегистрироваться",
         command=register_user,
-        style='Large.TButton'
+        style='Register.TButton'
     )
-    register_btn.pack(pady=20, ipady=8, ipadx=20, fill='x')  # Добавил fill='x' для растягивания
+    register_btn.pack(pady=20, ipady=8, ipadx=20,)
     
 def login():
     '''Авторизация'''
@@ -337,19 +334,22 @@ def login():
         import catalog  # Импортируем модуль спортивного магазина
         catalog.show_store_window(username)  # Открываем окно магазина
     else:
-        messagebox.showerror("Ошибка", "Неверный логин или пароль!")
+        messagebox.showerror("Ошибка", "Пользователь не зарегистрирован или неверный пароль!")
 
+def on_enter_pressed(event):
+    '''Обработчик нажатия Enter'''
+    login()
 
 # Главное окно
 root = tk.Tk()
 root.title("Авторизация в VolgaShop")
-root.geometry("1080x720")
+root.geometry("1080x600")
 root.minsize(1080, 720)
 root.configure(bg="#D9EBFF")
 
 # Центрирование главного окна
 window_width = 800
-window_height = 600
+window_height = 700
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 center_x = int(screen_width/2 - window_width/2)
@@ -389,9 +389,18 @@ header = ttk.Label(
     text="VolgaShop",
     style='Large.TLabel',
     font=('Poppins', 18, 'bold'),
-    foreground="#360082")
-header.pack(pady=(5, 15))
+    foreground="#478dff")
+header.pack(pady=(5, 2))
 
+# Подзаголовок "Спортивный магазин"
+subheader = ttk.Label(
+    main_frame,
+    text="Спортивный магазин",
+    style='Large.TLabel',
+    font=('Poppins', 14),  # Меньший размер шрифта
+    foreground="#636363"  # Более темный серый цвет
+)
+subheader.pack(pady=(0,10))  # Отступ снизу 20px перед полями ввода
 
 # Поля для ввода
 ttk.Label(main_frame, text="Логин:", style='Large.TLabel').pack(pady=3)
@@ -401,6 +410,9 @@ username_canvas.pack(pady=3)
 ttk.Label(main_frame, text="Пароль:", style='Large.TLabel').pack(pady=3)
 password_canvas, password_entry = create_rounded_entry(main_frame, is_password=True)
 password_canvas.pack(pady=3)
+
+username_entry.bind('<Return>', on_enter_pressed)
+password_entry.bind('<Return>', on_enter_pressed)
 
 # Кнопки
 buttons_frame = ttk.Frame(main_frame, style='TFrame')

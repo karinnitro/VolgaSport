@@ -11,35 +11,47 @@ class ProductReviewWindow:
         self.product_name = product_name
         
         self.window = tk.Toplevel(parent)
-        self.window.title(f"Отзыв: {product_name}")
+        self.window.title(f"VolgaShop - Отзыв: {product_name}")
         self.window.geometry("600x500")
         self.window.resizable(False, False)
-        self.window.configure(bg='#f0f5ff')
+        self.window.configure(bg='#D9EBFF')  # Изменен фон
         
         # Стили
         self.style = ttk.Style()
-        self.style.configure('TFrame', background='#f0f5ff')
-        self.style.configure('TLabel', font=('Arial', 12), background='#f0f5ff', foreground='#333333')
-        self.style.configure('TButton', font=('Arial', 12))
+        self.style.theme_use('clam')  # Единая тема
+        self.style.configure('TFrame', background='#f5f5f5')  # Изменен фон
+        self.style.configure('TLabel', 
+                           font=('Segoe UI', 12),  # Изменен шрифт
+                           background='#f5f5f5', 
+                           foreground='#333333')
+        self.style.configure('TButton', 
+                           font=('Segoe UI', 12),  # Изменен шрифт
+                           background='#72a8fe',  # Изменен цвет
+                           foreground='white')
         self.style.configure('Submit.TButton', 
-                           background="#3B98F4", 
-                           foreground='white',
-                           font=('Arial', 12, 'bold'))
+                           font=('Segoe UI', 12, 'bold'),  # Изменен шрифт
+                           background="#72a8fe",  # Изменен цвет
+                           foreground='white')
         
         # Основной контейнер
-        main_frame = ttk.Frame(self.window, padding=20, style='TFrame')
-        main_frame.pack(expand=True, fill='both')
+        main_frame = ttk.Frame(self.window, style='TFrame')
+        main_frame.pack(expand=True, fill='both', padx=20, pady=15)
+
+        # Верхняя часть - заголовок и форма
+        form_frame = ttk.Frame(main_frame, style='TFrame')
+        form_frame.pack(fill='both', expand=True)
         
-        # Заголовок
-        ttk.Label(main_frame, 
+        # Заголовок (без изменений)
+        ttk.Label(form_frame, 
                  text=f"Оставить отзыв на товар:\n«{product_name}»",
-                 font=('Arial', 14, 'bold'),
+                 font=('Poppins', 14, 'bold'),
+                 foreground='#478dff',
                  style='TLabel',
-                 justify='center').pack(pady=10)
+                 justify='center').pack(pady=(0, 15))
         
-        # Блок оценки
-        rating_frame = ttk.Frame(main_frame, style='TFrame')
-        rating_frame.pack(pady=15)
+        # Блок оценки (без изменений)
+        rating_frame = ttk.Frame(form_frame, style='TFrame')
+        rating_frame.pack(pady=5)  # Уменьшен отступ
         
         ttk.Label(rating_frame, text="Оценка:", style='TLabel').pack(side='left')
         
@@ -51,39 +63,37 @@ class ProductReviewWindow:
                            value=i,
                            style='TLabel').pack(side='left', padx=5)
         
-        # Поле комментария
-        ttk.Label(main_frame, text="Текст отзыва:", style='TLabel').pack(anchor='w')
+        # Поле комментария с фиксированной высотой
+        ttk.Label(form_frame, text="Текст отзыва:", style='TLabel').pack(anchor='w', pady=(10, 5))
         
-        self.comment = tk.Text(main_frame, 
-                             height=12,
-                             width=60,
+        self.comment = tk.Text(form_frame, 
+                             height=8,  # Уменьшена высота
+                             width=50,
                              wrap='word',
-                             font=('Arial', 11),
+                             font=('Segoe UI', 11),
                              bg='white',
                              fg='#333333',
                              padx=5,
                              pady=5)
-        self.comment.pack(fill='both', expand=True)
+        self.comment.pack(fill='x')
         
-        # Блок кнопок
+         # Нижняя часть - только кнопки
         button_frame = ttk.Frame(main_frame, style='TFrame')
-        button_frame.pack(fill='x', pady=15)
-        
-        # Кнопка "Отправить отзыв"
+        button_frame.pack(fill='x', pady=(10, 0))  # Верхний отступ
+
+        # Кнопки с фиксированным расположением
         ttk.Button(button_frame,
-                  text="Отправить отзыв",
-                  style='Submit.TButton',
-                  command=self.submit_review).pack(side='right', 
-                                                 ipadx=20, 
-                                                 ipady=5)
-        
-        # Кнопка отмены
+                 text="Отмена",
+                 command=self.window.destroy,
+                 style='TButton').pack(side='right', padx=10, ipadx=15, ipady=3)
+
         ttk.Button(button_frame,
-                  text="Отмена",
-                  command=self.window.destroy).pack(side='right', 
-                                                  padx=10,
-                                                  ipadx=20,
-                                                  ipady=5)
+                 text="Отправить отзыв",
+                 style='Submit.TButton',
+                 command=self.submit_review).pack(side='right', ipadx=15, ipady=3)
+
+        # Уменьшаем общий размер окна
+        self.window.geometry("500x400")  # Более компактный размер
     
     def submit_review(self):
         """Обработчик отправки отзыва"""
