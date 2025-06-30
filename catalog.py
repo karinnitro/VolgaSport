@@ -4,7 +4,8 @@ import sqlite3
 from buy_product import ProductPurchaseWindow
 from review_window import ProductReviewWindow
 from view_reviews import ViewProductReviewsWindow
-from styles import configure_styles
+from PIL import Image, ImageTk
+import os
 
 
 class CustomerStatisticsWindow:
@@ -215,7 +216,8 @@ def show_store_window(username):
     # Создание окна
     store_window = tk.Tk()
     store_window.title(f"VolgaShop - Добро пожаловать, {username}")
-    store_window.geometry("1600x900")
+    store_window.geometry("1000x600")  # Уменьшаем размер окна
+    store_window.minsize(800, 500) 
     store_window.configure(bg="#D9EBFF")  # Изменен цвет фона
     store_window.resizable(False, False)  
 
@@ -235,7 +237,7 @@ def show_store_window(username):
     style.configure('Treeview',
                     background="#ffffff",
                     foreground="#333333",
-                    rowheight=35,
+                    rowheight=70,
                     fieldbackground='#ffffff',
                     font=('Segoe UI', 12))  # Изменен шрифт
     style.configure('Treeview.Heading',
@@ -263,9 +265,10 @@ def show_store_window(username):
 
     # Таблица товаров (оставляем как есть)
     columns = ('name', 'category', 'price', 'quantity', 'rating', 'status')
-    tree = ttk.Treeview(main_frame, columns=columns, show='headings')
+    tree = ttk.Treeview(main_frame, columns=columns, show='tree headings')
     
     # Настройка заголовков (можно оставить как есть)
+    tree.heading('#0', text='Фото')
     tree.heading('name', text='Название')
     tree.heading('category', text='Категория') 
     tree.heading('price', text='Цена')
@@ -274,6 +277,7 @@ def show_store_window(username):
     tree.heading('status', text='Статус')
 
     # Добавьте эти строки для настройки выравнивания столбцов:
+    tree.column('#0', width=100, anchor='center')
     tree.column('name', anchor='center', width=250)      # Выравнивание по центру
     tree.column('category', anchor='center', width=150)  # Выравнивание по центру
     tree.column('price', anchor='center', width=100)     # Выравнивание по центру
@@ -286,20 +290,51 @@ def show_store_window(username):
 
     tree.pack(expand=True, fill='both')
 
+    images = {}
     # Загрузка товаров
     def load_products():
         tree.delete(*tree.get_children())
-        cursor.execute('''SELECT p.id, p.name, p.category, p.price, p.quantity, 
-                        ROUND(AVG(r.rating),1) FROM products p
-                        LEFT JOIN reviews r ON p.id=r.product_id
-                        GROUP BY p.id''')
+
+        cursor.execute('''
+            SELECT p.id, p.name, p.category, p.price, p.quantity, ROUND(AVG(r.rating), 1)
+            FROM products p
+            LEFT JOIN reviews r ON p.id = r.product_id
+            GROUP BY p.id
+        ''')
         products = cursor.fetchall()
 
         for product in products:
             product_id, name, category, price, quantity, avg_rating = product
+
+            # Получаем путь к картинке из БД
+            cursor.execute("SELECT image_path FROM products WHERE id=?", (product_id,))
+            result = cursor.fetchone()
+            image_path = result[0] if result else None
+
+            # Загружаем и уменьшаем картинку, если она есть
+            if image_path and os.path.exists(image_path):
+                img = Image.open(image_path).convert("RGBA")
+                max_size = (60, 60)
+                img.thumbnail(max_size, Image.LANCZOS)
+
+                background = Image.new('RGBA', max_size, (255, 255, 255, 0))
+                x = (max_size[0] - img.width) // 2
+                y = (max_size[1] - img.height) // 2
+                background.paste(img, (x, y), img)  # третий параметр - маска для прозрачности
+
+                photo = ImageTk.PhotoImage(background)
+                images[product_id] = photo
+            else:
+                photo = None
+
             status = "В наличии" if quantity > 0 else "Нет в наличии"
             rating = f"{avg_rating}" if avg_rating else "—"
-            tree.insert('', 'end', values=(name, category, f"{price:.2f} руб.", quantity, rating, status))
+
+            tree.insert('', 'end',
+                        text='',           # Можно оставить пустым или вставить имя товара, если хочешь
+                        image=photo,
+                        values=(name, category, f"{price:.2f} руб.", quantity, rating, status))
+
 
     def get_selected_product_info():
         selected = tree.focus()
@@ -307,7 +342,7 @@ def show_store_window(username):
             messagebox.showwarning("Ошибка", "Выберите товар")
             return None
         product_data = tree.item(selected)['values']
-        return (product_data[0], product_data[1], product_data[2], product_data[5])  # name, category, price, status
+        return (product_data[1], product_data[2], product_data[3], product_data[6])
 
     def on_add_review():
         selected = tree.focus()
@@ -333,7 +368,7 @@ def show_store_window(username):
         product_info = get_selected_product_info()
         if not product_info:
             return
-        name, category, price, status = product_info
+        name, _,_, status = product_info
         if status == "Нет в наличии":
             messagebox.showinfo("Недоступно", "Этот товар отсутствует в наличии")
             return
