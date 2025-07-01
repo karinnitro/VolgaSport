@@ -3,33 +3,34 @@ from tkinter import ttk, messagebox
 import sqlite3
 
 class ViewProductReviewsWindow:
+    """Окно для просмотра отзывов о товаре."""
     def __init__(self, parent, product_id, product_name):
+        """Инициализация."""
         self.parent = parent
         self.product_id = product_id
         
         self.window = tk.Toplevel(parent)
         self.window.title(f"VolgaShop - Отзывы: {product_name}")
         self.window.geometry("900x650")
-        self.window.configure(bg='#D9EBFF')  # Изменен фон
+        self.window.configure(bg='#D9EBFF') 
         
-        # Стили
         self.style = ttk.Style()
-        self.style.theme_use('clam')  # Единая тема
-        self.style.configure('TFrame', background='#f5f5f5')  # Изменен фон
+        self.style.theme_use('clam')  
+        self.style.configure('TFrame', background='#f5f5f5')  
         self.style.configure('Header.TLabel', 
-                           font=('Poppins', 16, 'bold'),  # Изменен шрифт
+                           font=('Poppins', 16, 'bold'),  
                            background='#f5f5f5',
-                           foreground='#478dff')  # Изменен цвет
+                           foreground='#478dff')  
         self.style.configure('Treeview', 
-                           font=('Segoe UI', 12),  # Изменен шрифт
+                           font=('Segoe UI', 12),  
                            rowheight=30,
                            fieldbackground='white')
         self.style.configure('Treeview.Heading', 
-                           font=('Segoe UI', 12, 'bold'),  # Изменен шрифт
-                           background='#72a8fe',  # Изменен цвет
+                           font=('Segoe UI', 12, 'bold'),  
+                           background='#72a8fe',  
                            foreground='white')
         self.style.map('Treeview',
-                      background=[('selected', '#478dff')],  # Изменен цвет
+                      background=[('selected', '#478dff')],  
                       foreground=[('selected', 'white')])
         
         # Основной фрейм
@@ -80,6 +81,7 @@ class ViewProductReviewsWindow:
         self.load_reviews()
     
     def load_reviews(self):
+        """Загрузка отзывов из базы данных."""
         try:
             conn = sqlite3.connect('sports_store.db')
             cursor = conn.cursor()
@@ -92,7 +94,6 @@ class ViewProductReviewsWindow:
                           (self.product_id,))
             
             for row in cursor.fetchall():
-                # Добавляем звезды вместо цифр для оценки
                 rating_stars = '★' * row[1] + '☆' * (5 - row[1])
                 self.tree.insert('', 'end', values=(row[0], rating_stars, row[2], row[3]))
             
@@ -102,7 +103,6 @@ class ViewProductReviewsWindow:
             if conn:
                 conn.close()
 
-# Пример использования (для тестирования)
 if __name__ == "__main__":
     root = tk.Tk()
     root.withdraw()

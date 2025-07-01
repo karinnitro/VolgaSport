@@ -1,6 +1,8 @@
+"""Модуль для удаления товара и связанных отзывов из базы данных."""
 import sqlite3
 
 def delete_product(product_name):
+    """Удаляет товар и все связанные с ним отзывы"""
     conn = sqlite3.connect('sports_store.db')
     cursor = conn.cursor()
     
@@ -16,5 +18,4 @@ def delete_product(product_name):
     finally:
         conn.close()
 
-# Укажите название товара для удаления
-delete_product("Сумка спортивная")  # Замените на нужное
+delete_product("Сумка спортивная") 

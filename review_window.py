@@ -4,7 +4,9 @@ import sqlite3
 from datetime import datetime
 
 class ProductReviewWindow:
+    """Окно для оставления или редактирования отзыва на товар."""
     def __init__(self, parent, product_id, product_name, username):
+        """Инициализация."""
         self.parent = parent
         self.product_id = product_id
         self.username = username
@@ -96,7 +98,7 @@ class ProductReviewWindow:
         self.window.geometry("500x400")  # Более компактный размер
     
     def submit_review(self):
-        """Обработчик отправки отзыва"""
+        """Отправка или обновление отзыва."""
         comment = self.comment.get("1.0", tk.END).strip()
         rating = self.rating.get()
         
@@ -144,7 +146,6 @@ class ProductReviewWindow:
             if conn:
                 conn.close()
 
-# Пример использования (для тестирования)
 if __name__ == "__main__":
     root = tk.Tk()
     root.withdraw()

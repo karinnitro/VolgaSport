@@ -1,6 +1,7 @@
 from tkinter import ttk
 
 def configure_styles(root):
+    """Настройка стилей для ttk виджетов."""
     style = ttk.Style(root)
     style.theme_use('clam')
     

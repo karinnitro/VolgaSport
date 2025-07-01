@@ -1,7 +1,11 @@
 import sqlite3
+
 def add_product(name, category, price, quantity, description="", image_path=""):
+    """Добавляет новый товар в таблицу products"""
     conn = sqlite3.connect('sports_store.db')
     cursor = conn.cursor()
+    
+    # Выполняем вставку данных о товаре
     cursor.execute('''
         INSERT INTO products (name, category, price, quantity, description, image_path)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -9,7 +13,6 @@ def add_product(name, category, price, quantity, description="", image_path=""):
     conn.commit()
     conn.close()
     print("Товар добавлен!")
-
 
 add_product(
     name="Сумка спортивная",

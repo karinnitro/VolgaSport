@@ -6,7 +6,9 @@ from styles import configure_styles
 
 
 class ProductPurchaseWindow:
+    """Окно оформления покупки товара."""
     def __init__(self, parent, product_info, callback=None):
+        """Инициализация окна покупки"""
         self.parent = parent
         self.product_info = product_info
         self.callback = callback
@@ -25,11 +27,7 @@ class ProductPurchaseWindow:
         self.main_frame.pack(expand=True, fill='both', padx=20, pady=20)
         
         # Заголовок
-        ttk.Label(
-            self.main_frame, 
-            text="Оформление покупки", 
-            style='Header.TLabel'
-        ).pack(pady=10)
+        ttk.Label(self.main_frame, text="Оформление покупки", style='Header.TLabel').pack(pady=10)
         
         # Информация о товаре
         self.create_product_info_section()
@@ -48,6 +46,7 @@ class ProductPurchaseWindow:
         self.create_purchases_table()
     
     def center_window(self, width, height):
+        """Центрирует окно на экране."""
         screen_width = self.purchase_window.winfo_screenwidth()
         screen_height = self.purchase_window.winfo_screenheight()
         x = (screen_width - width) // 2
@@ -85,6 +84,8 @@ class ProductPurchaseWindow:
                                  ('!active', self.button_color)])
     
     def create_product_info_section(self):
+        """Создает секцию с информацией о товаре"""
+
         # Фрейм для информации о товаре
         product_frame = ttk.Frame(self.main_frame, style='TFrame')
         product_frame.pack(fill='x', pady=10)
@@ -118,6 +119,8 @@ class ProductPurchaseWindow:
         ).pack(anchor='w')
     
     def create_input_fields(self):
+        """Создает поля ввода для данных."""
+
         # Фрейм для полей ввода
         input_frame = ttk.Frame(self.main_frame, style='TFrame')
         input_frame.pack(fill='x', pady=20)
@@ -185,6 +188,8 @@ class ProductPurchaseWindow:
         input_frame.columnconfigure(1, weight=1)
     
     def create_buttons(self):
+        """Создает кнопки подтверждения и отмены."""
+
         # Фрейм для кнопок
         button_frame = ttk.Frame(self.main_frame, style='TFrame')
         button_frame.pack(fill='x', pady=10)
@@ -206,6 +211,8 @@ class ProductPurchaseWindow:
         ).pack(side='right', padx=5, ipady=5, ipadx=10)
     
     def create_purchases_table(self):
+        """Создает таблицу покупок, если она еще не существует."""
+
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS purchases
                             (id INTEGER PRIMARY KEY AUTOINCREMENT,
                             product_name TEXT NOT NULL,
@@ -221,6 +228,8 @@ class ProductPurchaseWindow:
         self.conn.commit()
     
     def confirm_purchase(self):
+        """Подтверждает покупку и сохраняет данные в Базу Данных."""
+
         # Получение данных из полей ввода
         customer_name = self.customer_name_entry.get().strip()
         customer_email = self.customer_email_entry.get().strip()
@@ -319,20 +328,20 @@ class ProductPurchaseWindow:
             messagebox.showerror("Ошибка базы данных", f"Не удалось сохранить данные о покупке: {e}")
     
     def __del__(self):
-        # Закрытие соединения с БД при уничтожении объекта
+        """Закрытие соединения с БД при уничтожении объекта."""
+        
         if hasattr(self, 'conn'):
             self.conn.close()
 
-# Пример использования (для тестирования)
+# Пример использования
 if __name__ == "__main__":
     root = tk.Tk()
     root.withdraw()  # Скрываем основное окно
     
-    # Тестовые данные товара (название, категория, цена, количество, описание)
+    # Тестовые данные товара 
     test_product = ("Беговая дорожка ProForm", "Кардио оборудование", 45990.00, 10, 
                    "Профессиональная беговая дорожка с мощным двигателем 2.5 л.с.")
     
     # Создание окна покупки
     purchase_app = ProductPurchaseWindow(root, test_product)
-    
     root.mainloop()
