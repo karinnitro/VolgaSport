@@ -1,18 +1,21 @@
 import sqlite3
-def add_product(name, category, price, quantity, description=""):
+def add_product(name, category, price, quantity, description="", image_path=""):
     conn = sqlite3.connect('sports_store.db')
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO products (name, category, price, quantity, description)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (name, category, price, quantity, description))
+        INSERT INTO products (name, category, price, quantity, description, image_path)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (name, category, price, quantity, description, image_path))
     conn.commit()
     conn.close()
     print("Товар добавлен!")
 
+
 add_product(
-    name="Футболка Nike женская",
-    category="Спортивная одежда",
-    price=999.00,
-    quantity=5,
-    description="Спортивная футболка Nike женская")
+    name="Сумка спортивная",
+    category="Спортивные аксессуары",
+    price=3499.00,
+    quantity=42,
+    description="Сумка для спорта Adidas",
+    image_path="images/bag.jpg"
+)
