@@ -263,9 +263,20 @@ def show_store_window(username):
     main_frame = ttk.Frame(store_window, style='TFrame')
     main_frame.pack(expand=True, fill='both', padx=20, pady=20)
 
-    # Таблица товаров (оставляем как есть)
+    # Настройка сетки: 2 ряда, 1 колонка
+    main_frame.rowconfigure(0, weight=1)   # Таблица растягивается
+    main_frame.rowconfigure(1, weight=0)   # Кнопки фиксированы
+    main_frame.columnconfigure(0, weight=1)
+    
+
+    # Контейнер для таблицы
+    content_frame = ttk.Frame(main_frame, style='TFrame')
+    content_frame.grid(row=0, column=0, sticky='nsew')
+
+    # Таблица в content_frame
     columns = ('name', 'category', 'price', 'quantity', 'rating', 'status')
-    tree = ttk.Treeview(main_frame, columns=columns, show='tree headings')
+    tree = ttk.Treeview(content_frame, columns=columns, show='tree headings')
+    tree.pack(expand=True, fill='both')
     
     # Настройка заголовков (можно оставить как есть)
     tree.heading('#0', text='Фото')
@@ -342,7 +353,13 @@ def show_store_window(username):
             messagebox.showwarning("Ошибка", "Выберите товар")
             return None
         product_data = tree.item(selected)['values']
-        return (product_data[1], product_data[2], product_data[3], product_data[6])
+        # Проверяем длину списка product_data
+        if len(product_data) < 4: # Минимальное количество элементов, которое нужно
+            messagebox.showerror("Ошибка", "Недостаточно данных о товаре.")
+            return None
+
+        # Если достаточно, возвращаем нужные элементы,  используя явные имена:
+        return (product_data[0], product_data[1], product_data[2], product_data[3], product_data[4])
 
     def on_add_review():
         selected = tree.focus()
@@ -368,11 +385,11 @@ def show_store_window(username):
         product_info = get_selected_product_info()
         if not product_info:
             return
-        name, _,_, status = product_info
+        name, category, price, quantity,status = product_info  #  Ожидаем 5 элементов
         if status == "Нет в наличии":
             messagebox.showinfo("Недоступно", "Этот товар отсутствует в наличии")
             return
-        
+
         # Получаем данные о товаре для ProductPurchaseWindow
         cursor.execute("SELECT name, category, price, quantity, description FROM products WHERE name=?", (name,))
         product_data = cursor.fetchone()
@@ -381,7 +398,7 @@ def show_store_window(username):
 
     # Панель кнопок
     button_frame = ttk.Frame(main_frame, style='TFrame')
-    button_frame.pack(fill='x', pady=10)
+    button_frame.grid(row=1, column=0, sticky='ew', pady=(10, 0))
 
     ttk.Button(button_frame, text="Оставить отзыв", command=on_add_review).pack(side='left', padx=5)
     ttk.Button(button_frame, text="Просмотреть отзывы", command=on_view_reviews).pack(side='left', padx=5)

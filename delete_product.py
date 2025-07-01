@@ -17,4 +17,4 @@ def delete_product(product_name):
         conn.close()
 
 # Укажите название товара для удаления
-delete_product("")  # Замените на нужное
+delete_product("Эспандер 68 кг")  # Замените на нужное

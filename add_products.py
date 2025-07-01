@@ -16,4 +16,3 @@ add_product(
     price=999.00,
     quantity=5,
     description="Спортивная футболка Nike женская")
-
