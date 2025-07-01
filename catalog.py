@@ -8,78 +8,6 @@ from PIL import Image, ImageTk
 import os
 
 
-class CustomerStatisticsWindow:
-    def __init__(self, parent, username):
-        self.username = username
-        self.parent = parent
-        
-        # Создаем окно
-        self.window = tk.Toplevel(parent)
-        self.window.title(f"Статистика покупателя - {username}")
-        self.window.geometry("600x400")
-        self.window.configure(bg="#c6e3ff")
-        self.center_window(600, 400)
-        self.window.resizable(False, False)
-
-        # Стили
-        style = ttk.Style(self.window)
-        style.theme_use('clam')
-        style.configure('TFrame', background="#e0e6f5")
-        style.configure('TLabel', background="#e0e6f5", foreground="#000000", font=('Helvetica', 12))
-        style.configure('Large.TLabel', font=('Segoe UI', 16, 'bold'), background='#e0e6f5', foreground='#1a3e72')
-
-        # Основной фрейм
-        main_frame = ttk.Frame(self.window, style='TFrame')
-        main_frame.pack(expand=True, fill='both', padx=20, pady=20)
-
-        # Заголовок
-        ttk.Label(main_frame, text=f"{username}", style='Large.TLabel').pack(pady=10)
-
-        # Получение статистики
-        self.load_statistics(main_frame)
-
-        # Закрытие окна
-        self.window.protocol("WM_DELETE_WINDOW", self.on_close)
-
-    def center_window(self, width, height):
-        screen_width = self.window.winfo_screenwidth()
-        screen_height = self.window.winfo_screenheight()
-        x = (screen_width - width) // 2
-        y = (screen_height - height) // 2
-        self.window.geometry(f'{width}x{height}+{x}+{y}')
-
-    def load_statistics(self, frame):
-        conn = sqlite3.connect('sports_store.db')
-        cursor = conn.cursor()
-        
-        # Количество купленных товаров
-        cursor.execute('''SELECT COUNT(DISTINCT product_id) FROM reviews WHERE username=?''', (self.username,))
-        purchased_products_count = cursor.fetchone()[0]
-        
-        # Самый популярный товар у покупателя
-        cursor.execute('''SELECT p.name, COUNT(*) as review_count FROM reviews r
-                        JOIN products p ON r.product_id = p.id
-                        WHERE r.username=? GROUP BY p.name ORDER BY review_count DESC LIMIT 1''', (self.username,))
-        favorite_product = cursor.fetchone()
-        favorite_product_name = favorite_product[0] if favorite_product else "Нет отзывов"
-        
-        # Общая сумма покупок
-        cursor.execute('''SELECT SUM(total_amount) FROM purchases WHERE customer_email = 
-                         (SELECT email FROM users WHERE username=?)''', (self.username,))
-        total_spent = cursor.fetchone()[0] or 0
-        
-        # Отображаем статистику
-        ttk.Label(frame, text=f"Количество купленных товаров: {purchased_products_count}", 
-                 font=('Segoe UI', 14)).pack(pady=5)
-        ttk.Label(frame, text=f"Самый популярный товар: {favorite_product_name}", 
-                 font=('Segoe UI', 14)).pack(pady=5)
-        ttk.Label(frame, text=f"Общая сумма покупок: {total_spent:.2f} руб.", 
-                 font=('Segoe UI', 14)).pack(pady=5)
-        conn.close()
-
-    def on_close(self):
-        self.window.destroy()
-
 def init_store_db():
     conn = sqlite3.connect('sports_store.db')
     cursor = conn.cursor()
@@ -298,7 +226,7 @@ def show_store_window(username):
     tree.column('#0', width=100, anchor='center', stretch=False)
     tree.column('name', width=210, anchor='center', stretch=True)  # ← ключевой момент!
     tree.column('category', width=210, anchor='center', stretch=False)
-    tree.column('price', width=100, anchor='center', stretch=False)
+    tree.column('price', width=120, anchor='center', stretch=False)
     tree.column('quantity', width=80, anchor='center', stretch=False)
     tree.column('rating', width=100, anchor='center', stretch=False)
     tree.column('status', width=120, anchor='center', stretch=False)
@@ -424,15 +352,20 @@ def show_store_window(username):
 
     # Панель кнопок
     button_frame = ttk.Frame(main_frame, style='TFrame')
-    button_frame.grid(row=1, column=0, sticky='ew', pady=(10, 0))
+    button_frame.grid(row=1, column=0, pady=(10, 0))
 
-    ttk.Button(button_frame, text="Оставить отзыв", command=on_add_review).pack(side='left', padx=5)
-    ttk.Button(button_frame, text="Просмотреть отзывы", command=on_view_reviews).pack(side='left', padx=5)
-    ttk.Button(button_frame, text="Купить", command=on_purchase).pack(side='left', padx=5)
-    ttk.Button(button_frame, text="История покупок", command=show_purchased_products).pack(side='left', padx=5)
-    ttk.Button(button_frame, text="Статистика", command=lambda: CustomerStatisticsWindow(store_window, username)).pack(side='left', padx=5)
-    ttk.Button(button_frame, text="Обновить", command=load_products).pack(side='right', padx=5)
-    ttk.Button(button_frame, text="Выйти", command=store_window.destroy).pack(side='right', padx=5)
+    # ВНУТРИ ДЕЛАЕМ ЕЩЁ ОДИН ФРЕЙМ ДЛЯ ЦЕНТРАЦИИ
+    center_frame = ttk.Frame(button_frame, style='TFrame')
+    center_frame.pack(anchor='center')
+
+    # Кнопки теперь в center_frame
+    ttk.Button(center_frame, text="Оставить отзыв", command=on_add_review).pack(side='left', padx=5)
+    ttk.Button(center_frame, text="Просмотреть отзывы", command=on_view_reviews).pack(side='left', padx=5)
+    ttk.Button(center_frame, text="Купить", command=on_purchase).pack(side='left', padx=5)
+    ttk.Button(center_frame, text="История покупок", command=show_purchased_products).pack(side='left', padx=5)
+    ttk.Button(center_frame, text="Обновить", command=load_products).pack(side='left', padx=5)
+    ttk.Button(center_frame, text="Выйти", command=store_window.destroy).pack(side='left', padx=5)
+
 
     load_products()
 
