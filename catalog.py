@@ -237,9 +237,12 @@ def show_store_window(username):
     style.configure('Treeview',
                     background="#ffffff",
                     foreground="#333333",
-                    rowheight=70,
+                    rowheight=70,  
                     fieldbackground='#ffffff',
-                    font=('Segoe UI', 12))  # Изменен шрифт
+                    font=('Segoe UI', 12),
+                    padding=0,
+                    borderwidth=0,
+                    relief='flat') # Изменен 
     style.configure('Treeview.Heading',
                     background="#72a8fe",  # Изменен цвет
                     foreground='white',
@@ -265,19 +268,23 @@ def show_store_window(username):
 
     # Настройка сетки: 2 ряда, 1 колонка
     main_frame.rowconfigure(0, weight=1)   # Таблица растягивается
-    main_frame.rowconfigure(1, weight=0)   # Кнопки фиксированы
     main_frame.columnconfigure(0, weight=1)
+
+    # Фрейм для таблицы (Treeview)
+    table_frame = ttk.Frame(main_frame, style='TFrame')
+    table_frame.grid(row=0, column=0, sticky='nsew')
     
 
     # Контейнер для таблицы
+    # Замените создание content_frame на:
     content_frame = ttk.Frame(main_frame, style='TFrame')
-    content_frame.grid(row=0, column=0, sticky='nsew')
+    content_frame.grid(row=0, column=0, sticky='nsew', padx=0, pady=0) 
 
     # Таблица в content_frame
     columns = ('name', 'category', 'price', 'quantity', 'rating', 'status')
     tree = ttk.Treeview(content_frame, columns=columns, show='tree headings')
-    tree.pack(expand=True, fill='both')
-    
+    # После создания Treeview добавьте:
+        
     # Настройка заголовков (можно оставить как есть)
     tree.heading('#0', text='Фото')
     tree.heading('name', text='Название')
@@ -287,19 +294,31 @@ def show_store_window(username):
     tree.heading('rating', text='Рейтинг')
     tree.heading('status', text='Статус')
 
-    # Добавьте эти строки для настройки выравнивания столбцов:
-    tree.column('#0', width=100, anchor='center')
-    tree.column('name', anchor='center', width=250)      # Выравнивание по центру
-    tree.column('category', anchor='center', width=150)  # Выравнивание по центру
-    tree.column('price', anchor='center', width=100)     # Выравнивание по центру
-    tree.column('quantity', anchor='center', width=80)   # Выравнивание по центру
-    tree.column('rating', anchor='center', width=100)    # Выравнивание по центру
-    tree.column('status', anchor='center', width=120)    # Выравнивание по центру
+    # Настройка столбцов
+    tree.column('#0', width=100, anchor='center', stretch=False)
+    tree.column('name', width=250, anchor='center', stretch=True)  # ← ключевой момент!
+    tree.column('category', width=150, anchor='center', stretch=False)
+    tree.column('price', width=100, anchor='center', stretch=False)
+    tree.column('quantity', width=80, anchor='center', stretch=False)
+    tree.column('rating', width=100, anchor='center', stretch=False)
+    tree.column('status', width=120, anchor='center', stretch=False)
 
-    # Добавьте эту строку для выравнивания заголовков по центру:
-    style.configure('Treeview.Heading', anchor='center')
 
+    tree['displaycolumns'] = ['name', 'category', 'price', 'quantity', 'rating', 'status']  # Явно указываем видимые столбцы
+
+    # После настройки всех столбцов добавьте:
     tree.pack(expand=True, fill='both')
+
+    # Убедитесь, что контейнер правильно настроен:
+    content_frame.columnconfigure(0, weight=1)
+    content_frame.rowconfigure(0, weight=1)
+
+     # Фиксированная высота строки в Treeview (уже есть, но оставляем для ясности)
+    style.configure('Treeview.Heading', anchor='center')
+    tree.pack(expand=True, fill='both')
+
+    tree.configure(style='Custom.Treeview')
+    style.configure('Custom.Treeview', rowheight=80)
 
     images = {}
     # Загрузка товаров
@@ -325,6 +344,7 @@ def show_store_window(username):
             # Загружаем и уменьшаем картинку, если она есть
             if image_path and os.path.exists(image_path):
                 img = Image.open(image_path).convert("RGBA")
+                img = img.resize((70, 70), Image.LANCZOS)
                 max_size = (60, 60)
                 img.thumbnail(max_size, Image.LANCZOS)
 
@@ -385,16 +405,22 @@ def show_store_window(username):
         product_info = get_selected_product_info()
         if not product_info:
             return
-        name, category, price, quantity,status = product_info  #  Ожидаем 5 элементов
+        
+        name, category, price, quantity, status = product_info
         if status == "Нет в наличии":
             messagebox.showinfo("Недоступно", "Этот товар отсутствует в наличии")
             return
-
-        # Получаем данные о товаре для ProductPurchaseWindow
+        
         cursor.execute("SELECT name, category, price, quantity, description FROM products WHERE name=?", (name,))
         product_data = cursor.fetchone()
         if product_data:
-            ProductPurchaseWindow(store_window, product_data, callback=load_products)
+            def callback():
+                load_products()
+                # Принудительное обновление геометрии
+                tree.update_idletasks()
+                content_frame.update_idletasks()
+                
+            ProductPurchaseWindow(store_window, product_data, callback=callback)
 
     # Панель кнопок
     button_frame = ttk.Frame(main_frame, style='TFrame')
