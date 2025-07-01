@@ -296,8 +296,8 @@ def show_store_window(username):
 
     # Настройка столбцов
     tree.column('#0', width=100, anchor='center', stretch=False)
-    tree.column('name', width=250, anchor='center', stretch=True)  # ← ключевой момент!
-    tree.column('category', width=150, anchor='center', stretch=False)
+    tree.column('name', width=210, anchor='center', stretch=True)  # ← ключевой момент!
+    tree.column('category', width=210, anchor='center', stretch=False)
     tree.column('price', width=100, anchor='center', stretch=False)
     tree.column('quantity', width=80, anchor='center', stretch=False)
     tree.column('rating', width=100, anchor='center', stretch=False)
